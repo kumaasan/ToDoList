@@ -1,0 +1,25 @@
+body{
+    background: url('./img/stacked-peaks-haikei.svg');
+    background-size: cover;
+    /*background-color: #111928;*/
+}
+
+#btn-logout{
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    transition: all 0.5s;
+}
+#btn-logout:hover{
+    background-color: #495057;
+}
+
+#addTask{
+    position: absolute;
+    top: 30px;
+    left: 50px;
+    transition: all 0.5s;
+}
+#addTask:hover{
+    background-color: #21a69b;
+}

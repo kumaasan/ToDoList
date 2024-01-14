@@ -1,0 +1,14 @@
+body{
+    /*overflow: hidden;*/
+    background: url('./img/stacked-waves-haikei.svg');
+    background-size: cover;
+}
+
+#sign-in{
+
+    margin-bottom: 20px;
+}
+
+#form{
+    box-shadow: 10px 10px 10px rgba(0,0,0,.4);
+}
