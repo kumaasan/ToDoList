@@ -1,4 +1,4 @@
-    <!doctype html>
+<!doctype html>
     <html lang="pl">
     <head>
         <meta charset="UTF-8">
@@ -70,13 +70,8 @@
                                         class="w-full px-5 py-3 text-base font-medium text-white transition border rounded-md cursor-pointer border-primary bg-[#325aa8] hover:bg-opacity-90"
                                 />
                                 <?php
-
-                                $servername = "localhost";
-                                $username = "root";
-                                $dbpassword = "";
-                                $dbname = "todolist";
-
-                                $conn = new mysqli($servername, $username, $dbpassword, $dbname);
+                                session_start();
+                              require 'connect.php';
 
                                 if(isset($_POST['register'])){
 
@@ -93,6 +88,7 @@
 
                                     if($resultChceck->num_rows <= 0){
                                         if ($conn->query($sql) === TRUE) {
+                                            $_POST = array();
                                             header('Location: /todolist.php');
                                         }else {
                                             echo "Error: " . $sql . "<br>" . $conn->error;
@@ -111,21 +107,23 @@
                                     $password = $_POST['password'];
 
 
-                                    $checkForUser = "SELECT email, passsw FROM users WHERE email = '$email'";
+                                    $checkForUser = "SELECT id, email, passsw FROM users WHERE email = '$email'";
                                     $result = $conn ->query($checkForUser);
 
                                     if($result->num_rows > 0){
                                         $row = $result->fetch_assoc();
                                         $hashedPassword = $row['passsw'];
                                         if(password_verify($password, $hashedPassword)){
+                                            $_SESSION['userId'] = $row['id'];
+                                        $_POST = array();
                                         header('Location: /todolist.php');
                                         }
                                         else{
-                                            echo "<strong><p style='color: white'>NIE PRAWIDŁOWE DANE LOGOWANIA!</p></strong>";
+                                            echo "<strong><p style='color: white'>Invalid email or password</p></strong>";
                                         }
                                     }
                                     else{
-                                        echo "<strong><p style='color: white'>NIE PRAWIDŁOWE DANE LOGOWANIA!</p></strong>";
+                                        echo "<strong><p style='color: white'>Invalid email or password</p></strong>";
                                     }
 
                                 }

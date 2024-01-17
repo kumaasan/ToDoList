@@ -1,7 +1,7 @@
 body{
     background: url('./img/stacked-peaks-haikei.svg');
     background-size: cover;
-    /*background-color: #111928;*/
+    overflow: hidden;
 }
 
 #btn-logout{
@@ -19,6 +19,7 @@ body{
     top: 30px;
     left: 50px;
     transition: all 0.5s;
+    cursor: pointer;
 }
 #addTask:hover{
     background-color: #21a69b;

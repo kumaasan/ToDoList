@@ -22,6 +22,40 @@
     <title>Things to do</title>
 </head>
     <body>
+    <?php
+    require 'connect.php';
+    session_start();
+    $category ="";
+    $datepicker = "";
+    $description = "";
+    if(isset($_POST['done'])){
+        $taskId = $_POST['taskId'];
+        $sql = "UPDATE tasks SET done = 1 WHERE id = $taskId";
+        $conn->query($sql);
+    }
+    if(isset($_POST['undone'])){
+
+        $taskId = $_POST['taskId'];
+        $sql = "update tasks set done = 0 where id = $taskId";
+        $conn -> query($sql);
+    }
+    if(isset($_POST['clear'])){
+        $userId = $_SESSION['userId'];
+        $sql = "delete from tasks where userId = $userId ";
+        $conn -> query($sql);
+    }
+    if(isset($_POST['submitNewTask'])){
+        $category = $_POST['category'];
+        $datepicker = $_POST['pickDate'];
+        $description = $_POST['description'];
+
+        $sql = "INSERT INTO tasks (category, deadline, content, userId) VALUES ('$category', '$datepicker', '$description', '$_SESSION[userId]' )";
+
+        if ($conn->query($sql) === TRUE) {
+            @header("Location: todolist.php");
+        }
+    }
+    ?>
 
 <a
         href="login.php"
@@ -38,61 +72,70 @@
     Add new task
 </a>
 
-<div id="list" class="flex items-center justify-center h-screen" >
-<table class="mx-auto table-auto bg-white border-separate border border-gray-300">
+<div id="list" class="flex flex-col items-center justify-center h-screen" >
+    <?php
+    $sql = "select count(id) as 'NumOfTasks' from tasks";
+    $result = $conn->query($sql)->fetch_assoc()['NumOfTasks'];
+    if($result > 0): ?>
+<table class="mx-auto table-auto bg-white border-separate border border-gray-300 rounded">
     <thead>
     <tr>
         <th class="py-2 px-4 border-b-2 border-gray-300">Category</th>
         <th class="py-2 px-4 border-b-2 border-gray-300">Description</th>
-        <th class="py-2 px-4 border-b-2 border-gray-300">Due to </th>
+        <th class="py-2 px-4 border-b-2 border-gray-300">Deadline </th>
         <th class="py-2 px-4 border-b-2 border-gray-300">Status</th>
     </tr>
     </thead>
     <tbody>
-    <tr>
+    <?php
+    $userId = $_SESSION['userId'];
+    $taskQuery = "select * from tasks where userId like '$userId'";
+    $result = $conn->query($taskQuery);
+    while($record = $result->fetch_assoc()):
+    ?>
+    <tr class="<?=$record['done'] ? "bg-green-200" : "bg-white"?>">
         <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">The Sliding Mr. Bones (Next Stop, Pottersville)</div>
+            <div class=" rounded-t px-4 py-2"><?= $record['category'] ?></div>
         </td>
         <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">Malcolm Lockyer</div>
+            <div class=" rounded-t px-4 py-2"><?= $record['content'] ?></div>
         </td>
         <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">1961</div>
+            <div class=" rounded-t px-4 py-2"><?= $record['deadline'] ?></div>
         </td>
         <td>
-            <div class="bg-white rounded-t px-4 py-2">Done</div>
+            <div class=" rounded-t px-4 py-2">
+                <?php if($record['done']): ?>
+                    <form method="post">
+                        <input type="hidden" name="taskId" value="<?=$record['id']?>">
+                        <button type="submit" name="undone" class="text-white bg-red-700  hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center ">Undone</button>
+                    </form>
+                <?php else: ?>
+
+                <form method="post">
+                    <input type="hidden" name="taskId" value="<?=$record['id']?>">
+                    <button type="submit" name="done" class="text-white bg-blue-700  hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center ">Done</button>
+                </form>
+                <?php endif; ?>
+            </div>
         </td>
     </tr>
-    <tr>
-        <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">Witchy Woman</div>
-        </td>
-        <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">The Eagles</div>
-        </td>
-        <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">1972</div>
-        </td>
-        <td>
-            <div class="bg-white rounded-t px-4 py-2">Done</div>
-        </td>
-    </tr>
-    <tr>
-        <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">Shining Star</div>
-        </td>
-        <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">Earth, Wind, and Fire</div>
-        </td>
-        <td class="py-4 px-4 border-b border-gray-300">
-            <div class="bg-white rounded-t px-4 py-2">1975</div>
-        </td>
-        <td>
-            <div class="bg-white rounded-t px-4 py-2">Done</div>
-        </td>
-    </tr>
+    <?php endwhile; ?>
     </tbody>
 </table>
+
+    <?php $clearQuery = "select count(id) as 'doneNum' from tasks where done = 0";
+    $result = $conn-> query($clearQuery)->fetch_assoc()['doneNum'];
+    if($result == 0): ?>
+    <form method="post">
+        <input type="hidden" name="userId" value="<?= $_SESSION['userId'] ?>">
+        <button type="submit" name="clear" class="text-white bg-blue-700  hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center ">Clear all tasks</button>
+    </form>
+    <?php endif; ?>
+    <?php else: ?>
+        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">All done!!</h1>
+        <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Let's add new tasks</p>
+    <?php endif; ?>
 </div>
 
 <div id="addNewTaskForm" class="flex items-center justify-center h-screen" style="display: none">
@@ -110,7 +153,7 @@
                     <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
                 </svg>
             </div>
-            <input name="datepicker"  autocomplete="off" datepicker datepicker-orientation="bottom right" datepicker-format="{dd/mm/yyyy}"  type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date">
+            <input name="pickDate" autocomplete="off" datepicker datepicker-orientation="bottom right" datepicker-format="dd/mm/yyyy"  type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date">
         </div>
 
 
@@ -123,15 +166,7 @@
     <button type="submit" name="submitNewTask" class="text-white bg-blue-700  hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
 </form>
 
-    <?php
-        if(isset($_POST['submitNewTask'])){
-            $category = $_POST['category'];
-            $datepicker = $_POST['datepicker'];
-            $description = $_POST['description'];
 
-            echo $category . " " . $datepicker . " " . $description;
-        }
-    ?>
 </div>
 
 

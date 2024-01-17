@@ -1,5 +1,5 @@
 body{
-    /*overflow: hidden;*/
+    overflow: hidden;
     background: url('./img/stacked-waves-haikei.svg');
     background-size: cover;
 }
